@@ -28,7 +28,7 @@ def check_inputs(values: dict) -> str:
 
 
 def update_if_empty(window, empty_input) -> None:
-    """Update PySimplGUI window Text element to warn user of any empty inputs.
+    """Update a PySimplGUI window Text element to warn user of any empty inputs.
 
     Args:
         window (sg.Window): the PySimple GUI window diplayed by the app.
@@ -58,7 +58,8 @@ def confirm_file_does_not_exist(filename: Path) -> bool:
     Returns:
         bool: Either the file exists or it doesn't.
     """
-    return not Path(filename).exists()
+    return not filename.exists()
+    # return not Path(filename).exists()
 
 
 # TODO - change this to open the file in notepad++ or other application.
@@ -68,8 +69,10 @@ def open_file_in_browser(filename: Path) -> None:
     Args:
         filename (pathlib.Path): Path to file to open
     """
-    file_to_open = Path(filename)
-    webbrowser.open_new(file_to_open)
+    # file_to_open = Path(filename)
+    # webbrowser.open_new(file_to_open)
+    webbrowser.open_new(filename)
+    
 
 
 def open_text_file(file_to_open) -> str:

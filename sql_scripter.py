@@ -20,6 +20,7 @@ import scripter_functions as sf
 # to change to the path with the Resources folder they are in.
 # Change this path_to_app before doing auto-py-to-exe.
 # path_to_app = Path('c:/Users/Tim/Documents/projects/scripter')
+#? - add choose file buttons for path_to_app and path_to_db?
 path_to_app = Path("A:/working_apps/scripter")
 path_to_db = Path("A:/muse-test-many/musica")
 
@@ -35,14 +36,23 @@ keys_to_clear = [
 custom_icon = sf.get_custom_icon()  # Titlebar icon.
 title_icon = "add32.png"
 
-row_counter = 0  # For counting rows as they're added to script.
+# For counting rows as they're added to script,
+# to know when to disable Next Song button..
+row_counter = 0
 
 # Enter key clicks the button that has focus.
 QT_ENTER_KEY1 = "special 16777220"
 QT_ENTER_KEY2 = "special 16777221"
 
 
-def show_message(key: str, message: str, color: str="white"):
+def show_message(key: str, message: str, color: str="white") -> None:
+    """Updates the specified window element with the given message and color.
+
+    Args:
+        key (str): The key of the window element to update.
+        message (str): The message to display.
+        color (str, optional): The color of the text. Defaults to "white".
+    """
     window[key].update(message, text_color=color)
 
 
@@ -56,37 +66,32 @@ def get_song_inputs() -> list:
 
 
 def create_song_row() -> list:
-    """Use results from get_song_inputs() to create a list.
+    """Creates a list with values from database fields based on the song inputs.
 
     Returns:
         list: list with values for database fields.
     """
     album_id, song_title, song_number, album_side = get_song_inputs()
-    #  * Sourcery did this
-    if window["-RB-LP-"].get() is not True:  # Check if radio button is checked. #* Could this be 'is False'
+    if  not window["-RB-LP-"].get():
         return get_song_row(song_title, song_number, album_id)
 
     # Change song number to album side or cd# and orignal song number ie. "A-1", "A-2","A-3",
-    song_number = f"{album_side}-{song_number}"
-    return get_song_row(song_title, song_number, album_id)
+    return get_song_row(song_title, f'{album_side}-{song_number},', album_id)
 
 
 def get_song_row(song_title, song_number, album_id) -> list:
-    """_summary_ This doc string is all wrong 
+    """Creates a list with values for database fields based on the song information.
 
     Args:
-        song_title (str): from -SONG-TITLE- input
-        song_number (int or str): from -SONG-NUMBER- input
-        album_id (str): from -ALBUM-ID- input
+        song_title (str): The title of the song, from -SONG-TITLE- input
+        song_number (int or str): the number of the song, from -SONG-NUMBER- input
+        album_id (str): the album id for the song, from -ALBUM-ID- input
 
     Returns:
         list: list of fields to make a row for sql script.
     """
     song_row = [song_title, song_number, album_id]
     show_message("-INFO-", f"\nSong added to script: \n    {song_row}")
-    # window["-INFO-"].update(f"\nSong added to script: \n    {song_row}"
-    #     f"\nSong added to script: \n    {song_row}", text_color="white"
-    # )
     return song_row
 
 
@@ -132,7 +137,11 @@ def execute_sql_script(db_to_use: str, script: str) -> None:
         commmit_sql(connection)
 
 
-def allow_edits():
+def allow_edits() -> None:
+    """Enables editing of the script in the window.
+
+    Updates the necessary window elements to allow editing of the script.
+    """
     window["-SCRIPT-"].update(disabled=False)
     window["-SCRIPT-"].set_focus()
     window["-SCRIPT-"].set_cursor(cursor=None, cursor_color="light green")
@@ -370,7 +379,7 @@ input_column = [
             background_color="#3a3a3a",
             text_color="#3a3a3a",
         ),
-    ],  # this is the only thing that changes.
+    ],
     [
         In("The Song Name", 
             enable_events=True, 
@@ -514,7 +523,7 @@ window = sg.Window(
     finalize=True,
 )
 
-# Alt key bindings TODO - can these be put in a function?
+# Alt key bindings
 window.bind("<Alt_L><n>", "Alt-n")
 window.bind("<Alt_R><n>", "Alt-n")
 NEXT = window["Next Song"]
@@ -601,7 +610,6 @@ while True:  # event Loop
         window["-CB-RESET-"].update(value=False)
 
     # Button events:
-    # TODO - change all the if and elif event ins to () instead of [].
     if event in ["Create Script", "Alt-r"]:
         # Catch blank inputs, uses named expression (walrus) assignment. This is not working now.
         if empty_input := sf.check_inputs(values):
@@ -620,10 +628,6 @@ while True:  # event Loop
                 file.write("\n\nVALUES")
             show_message("-INFO-", 
                 f'"{script_name}"  script created.\n\nUpdate Album ID number and # of songs.\nEnter Song Title.',)
-            # window["-INFO-"].update(
-            #     f'"{script_name}"  script created.\n\nUpdate Album ID number and # of songs.\nEnter Song Title.',
-            #     text_color="white",
-            # )
             window["-ALBUM-ID-"].set_focus()
             window["-ALBUM-ID-"].update(select=True, background_color="lightgrey")
             window["Next Song"].update(disabled=False)
@@ -666,15 +670,15 @@ while True:  # event Loop
         else:
             song_number = get_song_inputs()[2]
             song_row = create_song_row()
+            # Put the semicolon at end of string to complete the sql script.
             song_row = '("' + '", "'.join(map(str, song_row)) + '");'
             with open(script_name, "a") as file:
                 file.write(f"\n {song_row}")
             show_message("-INFO-", f"The last row is: \n   {song_row}")
-            # window["-INFO-"].update(f"The last row is: \n   {song_row}")
             window["Copy script"].update(disabled=False)
             show_script(script_name)
 
-    elif event in ["Copy script", "Alt-o"]:
+    elif event in ("Copy script", "Alt-o"):
         # Copy the text of the script to the clipboard.
         script = sg.clipboard_set(values["-SCRIPT-"])
         # Get the script from the clipboard.
@@ -684,17 +688,10 @@ while True:  # event Loop
         if check_sql_script(script) is False:
             show_message("-INFO-",
                 "\nScript is missing unclosed quotes \nand/or \nclosing semicolon",
-                text_color="orange")
-            # window["-INFO-"].update(
-            #     "\nScript is missing unclosed quotes \nand/or \nclosing semicolon",
-            #     text_color="orange",
-            # )
+                "orange")
         else:
             show_message("-STATUS-", 
                 "Script - checked and copied to clipboard, ready to commit.")
-            # window["-STATUS-"].update(
-            #     "Script - checked and copied to clipboard, ready to commit."
-            # )
             window["-INFO-"].update("", text_color="white")
             window["Commit script"].update(disabled=False)
             window["-CB-EDIT-"].update(visible=True)
@@ -739,19 +736,12 @@ while True:  # event Loop
             show_message("-INFO-", 
                 "\nScript is missing unclosed quotes \nand/or \nclosing semicolon",
                 text_color="orange",)
-            # window["-INFO-"].update(
-            #     "\nScript is missing unclosed quotes \nand/or \nclosing semicolon",
-            #     text_color="orange",
-            # )
         else:
             text = values["-SCRIPT-"]
             with open(script_name, "w") as file:
                 file.write(text)
             show_message("-STATUS-", f"\tScript saved as: {script_name}.", 
                     text_color="light green")
-            # window["-STATUS-"].update(
-            #     f"\tScript saved as: {script_name}.", text_color="light green"
-            # )
 
     elif event in ("Delete",):
         with suppress(NameError):
@@ -770,20 +760,14 @@ while True:  # event Loop
                     relative_location=(0, 200),
                 )
                 show_message("-INFO-", "Nothing to delete", text_color="dark orange" )
-                # window["-INFO-"].update("Nothing to delete", text_color="dark orange")
 
             if deleted := sf.confirm_file_does_not_exist(file_to_delete):
                 show_message("-INFO-", f'\nThe file  "{script_name}"  was deleted',
                     text_color="dark orange",)
-                # window["-INFO-"].update(
-                #     f'\nThe file  "{script_name}"  was deleted',
-                #     text_color="dark orange",
-                # )
             else:
                 show_message("-INFO-", f'\n"{script_name}"  not deleted')
-                # window["-INFO-"].update(f'\n"{script_name}"  not deleted')
 
-    # Show a popup with some information.
+    # Show a popup with some information about the app.
     if event in ("About...", "F2:113"):
         with chdir(path_to_app):
             about = sf.open_text_file(Path("Resources\\about.txt"))
@@ -799,7 +783,7 @@ while True:  # event Loop
             )
             window.reappear()
 
-    # # Use the Help menu item -Alt, H, H- or press F1.
+    # # Use the Help menu item or press F1.
     if event in ('Help', 'F1:112'):
         with chdir(path_to_app):
             print(f'Help folder is: {path_to_app}')
