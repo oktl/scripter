@@ -153,7 +153,7 @@ def delete_popup(title: str, text: str, filename: Path) -> None:
     else:
         filename.unlink()
     window.close()
-
+    
 
 def delete_file(filename: Path) -> None:
     """Delete a file with a popup to confirm.
@@ -162,8 +162,7 @@ def delete_file(filename: Path) -> None:
         filename (pathlib.Path): Path to file to delete.
     """
     file_size, file_time = get_file_attributes(filename)
-    newline = "\n"
-    ask_lines = f"{newline} {filename} {newline} Size:  {file_size} {newline} Date modified:  {file_time} {newline}"
+    ask_lines = f"\n{filename}\nSize:  {file_size}\n Date modified:  {file_time}\n"
     delete_popup("Delete", ask_lines, filename)
 
 

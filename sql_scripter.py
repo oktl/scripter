@@ -72,7 +72,7 @@ def create_song_row() -> list:
         list: list with values for database fields.
     """
     album_id, song_title, song_number, album_side = get_song_inputs()
-    if  not window["-RB-LP-"].get():
+    if not window["-RB-LP-"].get():
         return get_song_row(song_title, song_number, album_id)
 
     # Change song number to album side or cd# and orignal song number ie. "A-1", "A-2","A-3",
@@ -495,7 +495,7 @@ status_bar = (
             pad=((0, 45), (0, 0)), 
             enable_events=True, 
             key="-CB-EDIT-"
-        ),
+        )
         ],
 )
 
@@ -549,14 +549,14 @@ window.bind("<Alt_R><c>", "Alt-c")
 COMMIT = window["Commit script"]
 COMMIT.Widget.configure(underline=0)
 
-window.bind("<Alt_L><l>", "Alt-e")
-window.bind("<Alt_R><l>", "Alt-e")
+window.bind("<Alt_L><e>", "Alt-e")
+window.bind("<Alt_R><e>", "Alt-e")
 CLEAR = window['Clear inputs']
 CLEAR.Widget.configure(underline=2)
 
 # Ctrl key bindings
 window.bind("<Control-KeyPress-o>", "CTRL-O")  # Open.
-window.bind("<Control-KeyPress-s>", "CTRL-S")  # Save .
+window.bind("<Control-KeyPress-s>", "CTRL-S")  # Save.
 window.bind("<Control-KeyPress-x>", "CTRL-X")  # Exit app.
 
 while True:  # event Loop
@@ -634,7 +634,7 @@ while True:  # event Loop
             show_script(script_name)
 
     if event in ("Next Song", "Next", "Alt-n"):
-        # Catch blank inputs, uses named expression (walrus) assignment.
+        # Catch blank inputs, using named expression (walrus) assignment.
         if empty_input := sf.check_inputs(values):
             sf.update_if_empty(window, empty_input)
         else:
@@ -650,7 +650,6 @@ while True:  # event Loop
             song_number += 1
             song_rows = int(values["-NUMBER-"])
             row_counter += 1
-            print(f"Current row number is: {row_counter}")
 
             window["-SONG-NUMBER-"].update(song_number)
             window["-TITLE-"].set_focus()
@@ -684,7 +683,6 @@ while True:  # event Loop
         # Get the script from the clipboard.
         script = sg.clipboard_get()
         # Do a simple check of the script.
-        # if check_sql_script(script) == False:
         if check_sql_script(script) is False:
             show_message("-INFO-",
                 "\nScript is missing unclosed quotes \nand/or \nclosing semicolon",
@@ -702,9 +700,8 @@ while True:  # event Loop
         with chdir(path_to_db):
             execute_sql_script("db.sqlite3", script)
             show_message("-STATUS-", "Script committed to database.")
-            # window["-STATUS-"].update("Script committed to database.")
 
-    elif event in ("Clear inputs", "Clear", "Alt-l"):
+    elif event in ("Clear inputs", "Clear", "Alt-e"):
         values.clear()
         row_counter = 0
         for key in keys_to_clear:
@@ -722,7 +719,6 @@ while True:  # event Loop
     elif event.startswith("Open") or event == "CTRL-O":
         script_name = Path(sg.popup_get_file("file to open", no_window=True))
         show_message("-INFO-", f"File opened: \n{script_name}")
-        # window["-INFO-"].update(f"File opened: \n{script_name}")
         show_script(script_name)
         print(script_name)
         window["Copy script"].update(disabled=False)

@@ -14,8 +14,8 @@ tried different ways to do things.
 So I decided to make a gui to simplify some
 of those requirements. And that was easy
 enough to do. But then I kept thinking of 
-ways to make the gui do more. I added
-some features, automated checks and
-safety mechanisms. But it's not perfect yet..
+ways to make the gui do more and be more automated.
+I added some features, automated checks and
+safety mechanisms.
 
 ![](screen.png)
